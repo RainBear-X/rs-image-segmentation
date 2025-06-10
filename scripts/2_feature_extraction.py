@@ -16,8 +16,15 @@
 import rasterio
 import os
 import pickle
+from pathlib import Path
+import sys
 
 from modules.features.indices import *
+
+SCRIPT_DIR = Path(__file__).resolve().parent
+ROOT_DIR = SCRIPT_DIR.parent
+if str(ROOT_DIR) not in sys.path:
+    sys.path.append(str(ROOT_DIR))
 
 from modules.utils.set_chinese_font import set_chinese_font
 
@@ -135,9 +142,9 @@ def run_feature_extraction_stage(bands_data, preprocessing=True, texture_band_in
 
 
 if __name__ == "__main__":
-    # 文件路径配置
-    image_path = '../data/TM_image_AA_preprocessed.png/TM_image_AA_preprocessed.tif'  # 确保这是你的输入影像路径
-    output_dir = '../output/feature_outputs'
+    # 文件路径配置（相对于项目根目录）
+    image_path = ROOT_DIR / 'data' / 'TM_image_AA_preprocessed.png' / 'TM_image_AA_preprocessed.tif'
+    output_dir = ROOT_DIR / 'output' / 'feature_outputs'
 
     # 创建输出目录
     if not os.path.exists(output_dir):

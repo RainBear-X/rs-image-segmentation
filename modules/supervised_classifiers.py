@@ -23,8 +23,14 @@ import os
 import pickle
 import joblib
 import numpy as np
+from pathlib import Path
+import sys
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import GridSearchCV
+
+ROOT_DIR = Path(__file__).resolve().parents[1]
+if str(ROOT_DIR) not in sys.path:
+    sys.path.append(str(ROOT_DIR))
 
 from utils.set_chinese_font import set_chinese_font
 set_chinese_font()
@@ -122,12 +128,12 @@ if __name__ == '__main__':
     import matplotlib.pyplot as plt
 
     # ——— 加载采样坐标和标签 ——— #
-    samples_pkl = "../data/samples.pkl"
+    samples_pkl = ROOT_DIR / "data" / "samples.pkl"
     with open(samples_pkl, "rb") as f:
         coords, labels = pickle.load(f)   # coords: (N,2), labels: (N,)
 
     # ——— 读取全图特征 ——— #
-    fmap_path = "../output/feature_outputs/all_hierarchical_features.npy"
+    fmap_path = ROOT_DIR / "output" / "feature_outputs" / "all_hierarchical_features.npy"
     feature_map = np.load(fmap_path)      # shape (H, W, D)
 
     # ——— 从 coords 提取真正的特征样本 ——— #
@@ -138,16 +144,16 @@ if __name__ == '__main__':
     # ——— 训练模型 ——— #
     model = train_random_forest_from_samples(
         X, y,
-        save_path="../output/rf_samples_model.pkl"
+        save_path=ROOT_DIR / "output" / "rf_samples_model.pkl"
     )
 
     # ——— 全图预测、保存与可视化同原 —— #
     class_map = predict_image(model, feature_map)
-    out_dir = "../output"
+    out_dir = ROOT_DIR / "output"
     os.makedirs(out_dir, exist_ok=True)
     np.save(os.path.join(out_dir, "class_map.npy"), class_map)
     # ——— 全图可视化并保存 ——— #
-    eval_dir = "../output/supervised"
+    eval_dir = ROOT_DIR / "output" / "supervised"
     os.makedirs(eval_dir, exist_ok=True)
 
     fig = plt.figure(figsize=(6, 6))

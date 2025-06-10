@@ -12,15 +12,16 @@
 日期：2025-05-26
 '''
 
-import os
+from pathlib import Path
+from .path_utils import get_project_root
 
 def set_chinese_font():
     try:
         print("🎮设置中文字体...")
-        font_path = "../../监督分类/fonts/STHeiti Medium.ttc"  # ✅ 确保是完整字体文件路径
-        if os.path.isfile(font_path):
+        font_path = get_project_root() / "fonts" / "STHeiti Medium.ttc"
+        if font_path.is_file():
             from matplotlib import font_manager
-            prop = font_manager.FontProperties(fname=font_path)
+            prop = font_manager.FontProperties(fname=str(font_path))
             import matplotlib.pyplot as plt
             plt.rcParams["font.family"] = prop.get_name()
         else:

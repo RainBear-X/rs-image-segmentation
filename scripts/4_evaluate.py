@@ -18,9 +18,16 @@ import seaborn as sns
 from sklearn.metrics import classification_report, confusion_matrix, accuracy_score, cohen_kappa_score
 import pandas as pd
 import os
+from pathlib import Path
+import sys
 from matplotlib.patches import Patch
 import warnings
 warnings.filterwarnings('ignore')
+SCRIPT_DIR = Path(__file__).resolve().parent
+ROOT_DIR = SCRIPT_DIR.parent
+if str(ROOT_DIR) not in sys.path:
+    sys.path.append(str(ROOT_DIR))
+
 from modules.utils.set_chinese_font import set_chinese_font
 
 set_chinese_font()
@@ -409,9 +416,9 @@ def main():
     evaluator = ClassificationEvaluator()
 
     # 设置文件路径 - 请根据您的实际文件路径修改
-    classification_result_file = "../output/feature_outputs/all_hierarchical_features.npy"  # 或 .npy
-    roi_mask_file = "../output/ROI/roi_mask.npy"
-    output_directory = "output/evaluation_results"
+    classification_result_file = ROOT_DIR / "output" / "feature_outputs" / "all_hierarchical_features.npy"  # 或 .npy
+    roi_mask_file = ROOT_DIR / "output" / "ROI" / "roi_mask.npy"
+    output_directory = ROOT_DIR / "output" / "evaluation_results"
 
     # 检查文件是否存在
     if not os.path.exists(classification_result_file):

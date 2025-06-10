@@ -23,13 +23,21 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+from pathlib import Path
+import sys
 from sklearn.metrics import (
     confusion_matrix, classification_report,
     cohen_kappa_score, accuracy_score
 )
+ROOT_DIR = Path(__file__).resolve().parents[1]
+if str(ROOT_DIR) not in sys.path:
+    sys.path.append(str(ROOT_DIR))
+
 from utils.set_chinese_font import set_chinese_font
 
-def evaluate_classification(prediction, ground_truth, class_names, save_dir="output/supervised/evaluation"):
+def evaluate_classification(prediction, ground_truth, class_names, save_dir=None):
+    if save_dir is None:
+        save_dir = ROOT_DIR / "output" / "supervised" / "evaluation"
     os.makedirs(save_dir, exist_ok=True)
 
     # Flatten for sklearn
@@ -87,9 +95,9 @@ def evaluate_classification(prediction, ground_truth, class_names, save_dir="out
 if __name__ == '__main__':
     # —— 配置 —— #
     # 预测结果（H×W 整数数组，1,2,3…代表各类）
-    pred_path = "../output/feature_outputs/all_hierarchical_features.npy"
+    pred_path = ROOT_DIR / 'output' / 'feature_outputs' / 'all_hierarchical_features.npy'
     # 真值（H×W 整数数组，0代表未标注，其余 1,2,3…对应类别）
-    gt_path   = "../output/ROI/roi_mask.npy"
+    gt_path = ROOT_DIR / 'output' / 'ROI' / 'roi_mask.npy'
     # 类别名称列表，顺序要和 1,2,3… 对应
     class_names = ["水体", "植被", "建设用地"]
 
@@ -108,7 +116,7 @@ if __name__ == '__main__':
         prediction,
         ground_truth,
         class_names,
-        save_dir="../output/supervised/evaluation"
+        save_dir=ROOT_DIR / 'output' / 'supervised' / 'evaluation'
     )
 
     # —— 打印 summary —— #
