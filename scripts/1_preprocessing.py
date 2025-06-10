@@ -15,7 +15,14 @@
 
 
 import matplotlib.pyplot as plt
+from pathlib import Path
 import os
+import sys
+
+SCRIPT_DIR = Path(__file__).resolve().parent
+ROOT_DIR = SCRIPT_DIR.parent
+if str(ROOT_DIR) not in sys.path:
+    sys.path.append(str(ROOT_DIR))
 
 from modules.features.preprocessing import *
 from modules.utils.set_chinese_font import set_chinese_font
@@ -85,12 +92,12 @@ def run_preprocessing_stage(input_file, output_file, visualization_output_dir):
     return output_file
 
 if __name__ == "__main__":
-    # 测试模式下的默认参数
-    input_file = "../data/raw/AA.tif"
-    output_file = "../data/TM_image_AA_preprocessed.png/TM_image_AA_preprocessed.tif"
-    visualization_output_dir = "../data"
+    # 测试模式下的默认参数，路径相对于脚本所在目录
+    input_file = ROOT_DIR / "data" / "raw" / "AA.tif"
+    output_file = ROOT_DIR / "data" / "TM_image_AA_preprocessed.png" / "TM_image_AA_preprocessed.tif"
+    visualization_output_dir = ROOT_DIR / "data"
 
-    run_preprocessing_stage(input_file, output_file, visualization_output_dir)
+    run_preprocessing_stage(str(input_file), str(output_file), str(visualization_output_dir))
 
 # import matplotlib.pyplot as plt
 # 

@@ -17,11 +17,17 @@
 
 import pickle
 import os
+from pathlib import Path
+import sys
+
+ROOT_DIR = Path(__file__).resolve().parents[2]
+if str(ROOT_DIR) not in sys.path:
+    sys.path.append(str(ROOT_DIR))
 
 # 原始 PKL
-src = "../../output/feature_outputs/all_features_and_metadata.pkl"
+src = ROOT_DIR / "output" / "feature_outputs" / "all_features_and_metadata.pkl"
 # 打补丁后的 PKL
-dst = "../../output/feature_outputs/all_features_and_metadata_aliased.pkl"
+dst = ROOT_DIR / "output" / "feature_outputs" / "all_features_and_metadata_aliased.pkl"
 
 data = pickle.load(open(src, "rb"))
 

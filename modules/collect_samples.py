@@ -20,11 +20,17 @@ import os
 import pickle
 import numpy as np
 import matplotlib
+from pathlib import Path
+import sys
 # **保证使用 GUI 后端**
 matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 import tkinter as tk
 from tkinter.simpledialog import askinteger
+ROOT_DIR = Path(__file__).resolve().parents[1]
+if str(ROOT_DIR) not in sys.path:
+    sys.path.append(str(ROOT_DIR))
+
 from utils.set_chinese_font import set_chinese_font
 
 set_chinese_font()
@@ -115,7 +121,7 @@ if __name__ == '__main__':
     import numpy as np
 
     # —— 读取真彩色影像 —— #
-    ds = rasterio.open('../data/TM_image_AA_preprocessed.png/TM_image_AA_preprocessed.tif')
+    ds = rasterio.open(ROOT_DIR / 'data' / 'TM_image_AA_preprocessed.png' / 'TM_image_AA_preprocessed.tif')
     print("▶ bands:", ds.count)
     print("▶ dtype:", ds.dtypes)
     print("▶ shape:", ds.height, ds.width)
@@ -123,14 +129,14 @@ if __name__ == '__main__':
 
     # —— 加载特征图 —— #
     feature_map = np.load(
-        '../output/feature_outputs/all_hierarchical_features.npy'
+        ROOT_DIR / 'output' / 'feature_outputs' / 'all_hierarchical_features.npy'
     )  # H×W×F
 
     # —— 调用采样函数 —— #
     coords, samples, labels = collect_samples(
         image_rgb,
         feature_map,
-        output_path="../data/samples.pkl"
+        output_path=ROOT_DIR / 'data' / 'samples.pkl'
     )
 
     # —— 打印 pkl 内容 —— #

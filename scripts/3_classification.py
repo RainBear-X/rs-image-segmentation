@@ -13,8 +13,15 @@
 '''
 
 
-from modules.utils.set_chinese_font import set_chinese_font
+from pathlib import Path
+import sys
 
+SCRIPT_DIR = Path(__file__).resolve().parent
+ROOT_DIR = SCRIPT_DIR.parent
+if str(ROOT_DIR) not in sys.path:
+    sys.path.append(str(ROOT_DIR))
+
+from modules.utils.set_chinese_font import set_chinese_font
 set_chinese_font()
 
 import joblib
@@ -23,9 +30,6 @@ import rasterio
 from rasterio.crs import CRS
 
 from modules.features.extract import *
-from modules.utils.set_chinese_font import set_chinese_font
-
-set_chinese_font()
 
 
 
@@ -544,11 +548,11 @@ def save_three_class_tif(class_map, meta, out_tif):
 
 if __name__ == "__main__":
     # --- 配置 ---
-    # 设置您的特征提取后生成的 PKL 文件路径
-    feature_file_to_test = "../output/feature_outputs/all_features_and_metadata.pkl"
+    # 设置您的特征提取后生成的 PKL 文件路径（相对于项目根目录）
+    feature_file_to_test = ROOT_DIR / "output" / "feature_outputs" / "all_features_and_metadata.pkl"
 
     # 定义输出目录
-    output_directory = "output/segmentation_results"
+    output_directory = ROOT_DIR / "output" / "segmentation_results"
 
     # 确保输出目录存在
     os.makedirs(output_directory, exist_ok=True)
@@ -557,12 +561,13 @@ if __name__ == "__main__":
     # 如果您的PKL文件已存在，这部分代码不会执行
     if not os.path.exists(feature_file_to_test):
         print(f"警告: 特征文件 '{feature_file_to_test}' 不存在。")
-        dummy_dir = os.path.dirname(feature_file_to_test)
-        if not dummy_dir: dummy_dir = "modules/feature_outputs"
+        dummy_dir = feature_file_to_test.parent
+        if not str(dummy_dir):
+            dummy_dir = ROOT_DIR / "modules" / "feature_outputs"
         os.makedirs(dummy_dir, exist_ok=True)
 
-        print(f"将尝试在 '{dummy_dir}' 创建一个虚拟的 '{os.path.basename(feature_file_to_test)}' (PKL格式) 用于演示。")
-        feature_file_to_test = os.path.join(dummy_dir, os.path.basename(feature_file_to_test))
+        print(f"将尝试在 '{dummy_dir}' 创建一个虚拟的 '{feature_file_to_test.name}' (PKL格式) 用于演示。")
+        feature_file_to_test = dummy_dir / feature_file_to_test.name
 
         height, width = 256, 256
         # 模拟 pkl 文件内容结构，包含单个特征字典和元数据

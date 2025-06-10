@@ -20,6 +20,12 @@ import os
 import pickle
 import numpy as np
 import rasterio
+from pathlib import Path
+import sys
+
+ROOT_DIR = Path(__file__).resolve().parents[1]
+if str(ROOT_DIR) not in sys.path:
+    sys.path.append(str(ROOT_DIR))
 
 def generate_roi_mask_from_samples(
         samples_pkl_path: str,
@@ -58,9 +64,9 @@ def generate_roi_mask_from_samples(
     print(f"✅ ROI 掩膜已保存: {roi_mask_out} (shape={roi_mask.shape})")
 
 if __name__ == "__main__":
-    # ——— 修改下面三行，指定你的路径 ——— #
-    samples_pkl = "../data/samples.pkl"
-    ref_img      = "../data/TM_image_AA_preprocessed.tif"
-    out_mask     = "../output/ROI/roi_mask.npy"
+    # ——— 修改下面三行，指定你的路径（相对于项目根目录） ——— #
+    samples_pkl = ROOT_DIR / "data" / "samples.pkl"
+    ref_img = ROOT_DIR / "data" / "TM_image_AA_preprocessed.tif"
+    out_mask = ROOT_DIR / "output" / "ROI" / "roi_mask.npy"
 
     generate_roi_mask_from_samples(samples_pkl, ref_img, out_mask)
