@@ -51,6 +51,7 @@ def normalize_for_display(img):
 def collect_samples(image_rgb, feature_map, output_path="data/samples.pkl", class_labels=None):
     """
     在 RGB 图像上点击采样，弹窗输入类别编号，采集用于监督分类的样本。
+    支持鼠标滚轮缩放与右键拖动平移，可对局部区域放大后更精细地采样。
     同时记录每个样本的 (x, y) 坐标，保存为 (coords, labels)。
     """
     if class_labels is None:
@@ -63,12 +64,63 @@ def collect_samples(image_rgb, feature_map, output_path="data/samples.pkl", clas
 
     fig, ax = plt.subplots()
     disp = normalize_for_display(image_rgb)
-    ax.imshow(disp)
+    im = ax.imshow(disp)
     ax.set_title(
-        "点击采样，关闭窗口结束\n"
+        "点击采样，滚轮缩放，右键拖动平移，关闭窗口结束\n"
         + "类别映射："
         + "  ".join(f"{k}:{v}" for k, v in class_labels.items())
     )
+
+    pan_state = {"press": None, "background": None}
+
+    def onscroll(event):
+        """滚轮缩放图像以便精确采样"""
+        if event.xdata is None or event.ydata is None:
+            return
+        base_scale = 1.2
+        cur_xlim = ax.get_xlim()
+        cur_ylim = ax.get_ylim()
+        xdata, ydata = event.xdata, event.ydata
+        if event.button == 'up':
+            scale_factor = 1 / base_scale
+        elif event.button == 'down':
+            scale_factor = base_scale
+        else:
+            return
+        new_width = (cur_xlim[1] - cur_xlim[0]) * scale_factor
+        new_height = (cur_ylim[1] - cur_ylim[0]) * scale_factor
+        relx = (xdata - cur_xlim[0]) / (cur_xlim[1] - cur_xlim[0])
+        rely = (ydata - cur_ylim[0]) / (cur_ylim[1] - cur_ylim[0])
+        ax.set_xlim([xdata - new_width * relx, xdata + new_width * (1 - relx)])
+        ax.set_ylim([ydata - new_height * rely, ydata + new_height * (1 - rely)])
+        ax.figure.canvas.draw_idle()
+
+    def on_press(event):
+        """按下右键时记录初始状态以便平移"""
+        if event.button == 3 and event.inaxes == ax and event.xdata is not None and event.ydata is not None:
+            pan_state["press"] = (event.xdata, event.ydata, ax.get_xlim(), ax.get_ylim())
+            pan_state["background"] = fig.canvas.copy_from_bbox(ax.bbox)
+
+    def on_motion(event):
+        """拖动右键平移图像"""
+        press = pan_state.get("press")
+        if press is None or event.inaxes != ax or event.xdata is None or event.ydata is None:
+            return
+        xpress, ypress, xlim, ylim = press
+        dx = event.xdata - xpress
+        dy = event.ydata - ypress
+        ax.set_xlim(xlim[0] - dx, xlim[1] - dx)
+        ax.set_ylim(ylim[0] - dy, ylim[1] - dy)
+        canvas = fig.canvas
+        canvas.restore_region(pan_state["background"])
+        ax.draw_artist(im)
+        canvas.blit(ax.bbox)
+
+    def on_release(event):
+        """释放右键结束平移"""
+        if event.button == 3:
+            pan_state["press"] = None
+            fig.canvas.draw_idle()
 
     def onclick(event):
         if event.button == 1 and event.xdata is not None and event.ydata is not None:
@@ -88,9 +140,17 @@ def collect_samples(image_rgb, feature_map, output_path="data/samples.pkl", clas
             else:
                 print(f"❌ 无效编号 {lab}，有效：{list(class_labels.keys())}")
 
-    cid = fig.canvas.mpl_connect("button_press_event", onclick)
+    cid_click = fig.canvas.mpl_connect("button_press_event", onclick)
+    cid_scroll = fig.canvas.mpl_connect("scroll_event", onscroll)
+    cid_press = fig.canvas.mpl_connect("button_press_event", on_press)
+    cid_motion = fig.canvas.mpl_connect("motion_notify_event", on_motion)
+    cid_release = fig.canvas.mpl_connect("button_release_event", on_release)
     plt.show()
-    fig.canvas.mpl_disconnect(cid)
+    fig.canvas.mpl_disconnect(cid_click)
+    fig.canvas.mpl_disconnect(cid_scroll)
+    fig.canvas.mpl_disconnect(cid_press)
+    fig.canvas.mpl_disconnect(cid_motion)
+    fig.canvas.mpl_disconnect(cid_release)
     root.destroy()
 
     if not coords:
