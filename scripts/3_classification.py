@@ -388,11 +388,17 @@ def run_classification_stage(feature_file_path, method='rule_based', output_dir=
 
         if not valid_kmeans_keys:
             print(f"警告: 为KMeans指定的特征键 {kmeans_feature_keys} 在数据中均不可用，将使用自动选择。")
-            # Auto-selection is handled inside unsupervised_kmeans_classification now
-            pass
+            # 当未找到任何有效键时，将参数设为 None 以触发函数内部的自动选择
+            feature_keys_arg = None
+        else:
+            feature_keys_arg = valid_kmeans_keys
 
         num_clusters_kmeans = 7 # Adjust number of clusters
-        kmeans_result = unsupervised_kmeans_classification(features, n_clusters=num_clusters_kmeans, feature_keys_to_use=valid_kmeans_keys)
+        kmeans_result = unsupervised_kmeans_classification(
+            features,
+            n_clusters=num_clusters_kmeans,
+            feature_keys_to_use=feature_keys_arg
+        )
 
         # Map KMeans labels (0 to n-1) to class IDs (1 to n)
         final_classification_map = kmeans_result + 1

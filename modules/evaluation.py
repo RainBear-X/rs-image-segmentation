@@ -35,6 +35,21 @@ if str(ROOT_DIR) not in sys.path:
 
 from utils.set_chinese_font import set_chinese_font
 
+
+def compute_iou(y_true: np.ndarray, y_pred: np.ndarray, labels: list[int]):
+    """计算各类别的交并比(IoU)及其平均值"""
+    iou_dict = {}
+    for lab in labels:
+        intersection = np.logical_and(y_true == lab, y_pred == lab).sum()
+        union = np.logical_or(y_true == lab, y_pred == lab).sum()
+        if union == 0:
+            iou = 0.0
+        else:
+            iou = intersection / union
+        iou_dict[lab] = iou
+    mean_iou = np.mean(list(iou_dict.values())) if iou_dict else 0.0
+    return iou_dict, mean_iou
+
 def evaluate_classification(prediction, ground_truth, class_names, save_dir=None):
     if save_dir is None:
         save_dir = ROOT_DIR / "output" / "supervised" / "evaluation"
@@ -56,6 +71,7 @@ def evaluate_classification(prediction, ground_truth, class_names, save_dir=None
     cm = confusion_matrix(y_true, y_pred, labels=labels)
     oa = accuracy_score(y_true, y_pred)
     kappa = cohen_kappa_score(y_true, y_pred)
+    iou_dict, mean_iou = compute_iou(y_true, y_pred, labels)
 
     # 打印报告，显式传入 labels
     print("🔎 分类报告：")
@@ -68,6 +84,9 @@ def evaluate_classification(prediction, ground_truth, class_names, save_dir=None
     ))
     print(f"✅ 总体精度（OA）: {oa:.3f}")
     print(f"✅ Kappa 系数: {kappa:.3f}")
+    for lab, name in zip(labels, class_names):
+        print(f"✅ IoU - {name}: {iou_dict[lab]:.3f}")
+    print(f"✅ 平均 IoU: {mean_iou:.3f}")
 
     # 绘图
     set_chinese_font()
@@ -88,7 +107,9 @@ def evaluate_classification(prediction, ground_truth, class_names, save_dir=None
     return {
         "confusion_matrix": cm,
         "overall_accuracy": oa,
-        "kappa": kappa
+        "kappa": kappa,
+        "iou_per_class": iou_dict,
+        "mean_iou": mean_iou,
     }
 
 
@@ -123,4 +144,5 @@ if __name__ == '__main__':
     print("\n=== 评估结果摘要 ===")
     print(f"Overall Accuracy: {results['overall_accuracy']:.3f}")
     print(f"Kappa Coefficient: {results['kappa']:.3f}")
+    print(f"Mean IoU: {results['mean_iou']:.3f}")
     print("====================")

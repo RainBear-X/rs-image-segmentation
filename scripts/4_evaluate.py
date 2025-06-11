@@ -56,9 +56,11 @@ class ClassificationEvaluator:
 
     def load_classification_result(self, file_path):
         """加载分类结果文件"""
-        if file_path.endswith('.npy'):
+        file_path = Path(file_path)
+        ext = file_path.suffix.lower()
+        if ext == '.npy':
             return np.load(file_path)
-        elif file_path.endswith('.tif') or file_path.endswith('.tiff'):
+        elif ext in ('.tif', '.tiff'):
             import rasterio
             with rasterio.open(file_path) as src:
                 return src.read(1)
@@ -67,9 +69,11 @@ class ClassificationEvaluator:
 
     def load_roi_mask(self, file_path):
         """加载ROI掩膜文件"""
-        if file_path.endswith('.npy'):
+        file_path = Path(file_path)
+        ext = file_path.suffix.lower()
+        if ext == '.npy':
             return np.load(file_path)
-        elif file_path.endswith('.tif') or file_path.endswith('.tiff'):
+        elif ext in ('.tif', '.tiff'):
             import rasterio
             with rasterio.open(file_path) as src:
                 return src.read(1)
